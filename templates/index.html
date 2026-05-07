@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GauDIndian Cattle Breed Identifier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --earth:    #2C1A0E;
+    --amber:    #C8702A;
+    --gold:     #E8A857;
+    --cream:    #F5EDD8;
+    --sage:     #7A8C6E;
+    --rust:     #8B3A1C;
+    --light:    #FBF6EC;
+    --white:    #FFFFFF;
+    --shadow:   rgba(44,26,14,0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--light);
+    color: var(--earth);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Background texture ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 20%, rgba(200,112,42,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 90% 80%, rgba(122,140,110,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.5rem 4rem;
+    border-bottom: 1px solid rgba(44,26,14,0.12);
+    background: rgba(251,246,236,0.85);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .logo-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--amber), var(--rust));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 4px 16px rgba(200,112,42,0.3);
+  }
+  .logo-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; font-weight: 900;
+    color: var(--earth); line-height: 1;
+  }
+  .logo-text span {
+    font-size: 0.72rem; color: var(--amber);
+    font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .badge {
+    background: var(--amber); color: var(--white);
+    font-size: 0.7rem; font-weight: 500; letter-spacing: 0.08em;
+    padding: 0.35rem 0.9rem; border-radius: 999px;
+    text-transform: uppercase;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative; z-index: 5;
+    text-align: center; padding: 5rem 2rem 2rem;
+  }
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--amber);
+    border: 1px solid var(--amber); border-radius: 999px;
+    padding: 0.3rem 1.1rem; margin-bottom: 1.5rem;
+  }
+  .hero h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 5vw, 4.2rem);
+    font-weight: 900; line-height: 1.1;
+    color: var(--earth); margin-bottom: 1rem;
+  }
+  .hero h2 em { color: var(--amber); font-style: normal; }
+  .hero p {
+    font-size: 1.05rem; color: rgba(44,26,14,0.65);
+    max-width: 520px; margin: 0 auto 3rem; line-height: 1.7;
+  }
+  .stats {
+    display: flex; gap: 3rem; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 3rem;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 700; color: var(--amber); display: block;
+  }
+  .stat-label {
+    font-size: 0.75rem; color: rgba(44,26,14,0.5);
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    position: relative; z-index: 5;
+    max-width: 1200px; margin: 0 auto;
+    padding: 2rem 2rem 6rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+    align-items: start;
+  }
+
+  /* ── UPLOAD CARD ── */
+  .card {
+    background: var(--white);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 2px 20px var(--shadow), 0 0 0 1px rgba(44,26,14,0.06);
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; font-weight: 700; margin-bottom: 1.5rem;
+    color: var(--earth);
+  }
+  .card-title span { color: var(--amber); }
+
+  /* Drop zone */
+  .dropzone {
+    border: 2px dashed rgba(200,112,42,0.35);
+    border-radius: 18px;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: rgba(200,112,42,0.03);
+    position: relative;
+    overflow: hidden;
+  }
+  .dropzone:hover, .dropzone.drag-over {
+    border-color: var(--amber);
+    background: rgba(200,112,42,0.06);
+    transform: scale(1.01);
+  }
+  .dropzone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+  }
+  .dz-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+  .dz-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 700; color: var(--earth); margin-bottom: 0.4rem;
+  }
+  .dz-sub { font-size: 0.82rem; color: rgba(44,26,14,0.5); }
+
+  /* Preview */
+  #preview-container { display: none; margin-top: 1.5rem; }
+  #preview-img {
+    width: 100%; border-radius: 14px; max-height: 280px;
+    object-fit: cover; box-shadow: 0 4px 20px var(--shadow);
+  }
+  .preview-actions {
+    display: flex; gap: 0.75rem; margin-top: 1rem;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.8rem 1.6rem; border-radius: 12px;
+    font-size: 0.9rem; font-weight: 500; cursor: pointer;
+    transition: all 0.2s; border: none;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--amber) 0%, var(--rust) 100%);
+    color: var(--white); flex: 1;
+    box-shadow: 0 4px 14px rgba(200,112,42,0.35);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(200,112,42,0.45);
+  }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled {
+    opacity: 0.6; cursor: not-allowed; transform: none;
+  }
+  .btn-outline {
+    background: transparent; color: var(--amber);
+    border: 1.5px solid var(--amber);
+  }
+  .btn-outline:hover { background: rgba(200,112,42,0.06); }
+
+  /* Loading spinner */
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── RESULTS PANEL ── */
+  #results { display: none; }
+
+  .top-breed-banner {
+    background: linear-gradient(135deg, var(--earth) 0%, #4A2F1A 100%);
+    border-radius: 18px; padding: 2rem;
+    color: var(--white); margin-bottom: 1.5rem;
+    position: relative; overflow: hidden;
+  }
+  .top-breed-banner::after {
+    content: '🐄';
+    position: absolute; right: 1.5rem; bottom: -0.5rem;
+    font-size: 5rem; opacity: 0.12;
+  }
+  .tbr-label {
+    font-size: 0.72rem; font-weight: 500; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem;
+  }
+  .tbr-breed {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 900; margin-bottom: 0.5rem;
+    line-height: 1.1;
+  }
+  .tbr-conf {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(255,255,255,0.12); border-radius: 999px;
+    padding: 0.3rem 0.9rem; font-size: 0.85rem;
+  }
+  .conf-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
+
+  /* Breed info pills */
+  .breed-meta {
+    display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem;
+  }
+  .meta-pill {
+    background: rgba(255,255,255,0.1); border-radius: 999px;
+    padding: 0.25rem 0.75rem; font-size: 0.75rem;
+    display: flex; align-items: center; gap: 0.35rem;
+  }
+
+  /* Top-5 bars */
+  .section-label {
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: rgba(44,26,14,0.45);
+    margin-bottom: 1rem;
+  }
+  .bar-row {
+    display: grid; grid-template-columns: 130px 1fr 52px;
+    gap: 0.75rem; align-items: center; margin-bottom: 0.75rem;
+  }
+  .bar-name {
+    font-size: 0.82rem; font-weight: 500; color: var(--earth);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .bar-track {
+    height: 8px; background: rgba(44,26,14,0.08); border-radius: 999px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--amber), var(--rust));
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
+  .bar-fill.top { background: linear-gradient(90deg, var(--gold), var(--amber)); }
+  .bar-pct { font-size: 0.8rem; font-weight: 500; color: var(--amber); text-align: right; }
+
+  /* Grad-CAM */
+  .gradcam-section { margin-top: 1.5rem; }
+  .gradcam-label {
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: rgba(44,26,14,0.45);
+    margin-bottom: 0.75rem;
+  }
+  .gradcam-wrap {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+  }
+  .gradcam-wrap img {
+    width: 100%; border-radius: 12px;
+    box-shadow: 0 2px 12px var(--shadow);
+  }
+  .gradcam-caption {
+    font-size: 0.72rem; color: rgba(44,26,14,0.45);
+    text-align: center; margin-top: 0.4rem;
+  }
+
+  /* Breed fact */
+  .fact-box {
+    background: linear-gradient(135deg, rgba(122,140,110,0.1), rgba(200,112,42,0.08));
+    border-left: 3px solid var(--sage); border-radius: 0 12px 12px 0;
+    padding: 1rem 1.25rem; margin-top: 1.5rem;
+    font-size: 0.85rem; color: var(--earth); line-height: 1.6;
+  }
+  .fact-box strong { color: var(--sage); font-weight: 600; }
+
+  /* Empty state */
+  .empty-state {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 300px; color: rgba(44,26,14,0.3); text-align: center;
+  }
+  .empty-state .es-icon { font-size: 4rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-state p { font-size: 0.9rem; max-width: 200px; line-height: 1.5; }
+
+  /* Error */
+  .error-box {
+    background: rgba(139,58,28,0.08); border: 1px solid rgba(139,58,28,0.2);
+    border-radius: 12px; padding: 1rem 1.25rem; color: var(--rust);
+    font-size: 0.875rem; display: none; margin-top: 1rem;
+  }
+
+  /* ── BREEDS GRID (below) ── */
+  .breeds-section {
+    position: relative; z-index: 5;
+    max-width: 1200px; margin: 0 auto; padding: 0 2rem 6rem;
+  }
+  .breeds-header {
+    text-align: center; margin-bottom: 2.5rem;
+  }
+  .breeds-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 700; color: var(--earth);
+  }
+  .breeds-header p { font-size: 0.9rem; color: rgba(44,26,14,0.5); margin-top: 0.4rem; }
+  .breeds-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.6rem;
+  }
+  .breed-chip {
+    background: var(--white); border: 1px solid rgba(44,26,14,0.1);
+    border-radius: 10px; padding: 0.6rem 0.9rem;
+    font-size: 0.8rem; color: var(--earth); font-weight: 500;
+    text-align: center; transition: all 0.2s;
+    cursor: default;
+  }
+  .breed-chip:hover {
+    border-color: var(--amber); color: var(--amber);
+    transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 5;
+    background: var(--earth); color: rgba(255,255,255,0.5);
+    text-align: center; padding: 2rem;
+    font-size: 0.8rem;
+  }
+  footer strong { color: var(--gold); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    header { padding: 1rem 1.5rem; }
+    .main { grid-template-columns: 1fr; padding: 1.5rem 1rem 4rem; }
+    .hero { padding: 3rem 1.5rem 1.5rem; }
+    .gradcam-wrap { grid-template-columns: 1fr; }
+    .bar-row { grid-template-columns: 100px 1fr 46px; }
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.5s ease forwards; }
+
+  .loading-overlay {
+    position: absolute; inset: 0; border-radius: 24px;
+    background: rgba(251,246,236,0.92); backdrop-filter: blur(4px);
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1rem; z-index: 20;
+  }
+  .loading-overlay.active { display: flex; }
+  .big-spinner {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(200,112,42,0.2);
+    border-top-color: var(--amber);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .loading-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; color: var(--earth);
+  }
+  .loading-sub { font-size: 0.8rem; color: rgba(44,26,14,0.45); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🐄</div>
+    <div class="logo-text">
+      <h1>GauDrishti</h1>
+      <span>AI Cattle Breed Identifier</span>
+    </div>
+  </div>
+  <div class="badge">{{ num_breeds }} Breeds</div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">Deep Learning · EfficientNetB3 · Grad-CAM</div>
+  <h2>Identify any <em>Indian Cattle</em><br>breed instantly</h2>
+  <p>Upload a photo and our AI will identify the breed, confidence score, and visual explanation of what the model sees.</p>
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-num">{{ num_breeds }}</span>
+      <span class="stat-label">Breeds</span>
+    </div>
+    <!-- <div class="stat">
+      <span class="stat-num">~72%</span>
+      <span class="stat-label">Val Accuracy</span>
+    </div> -->
+    <div class="stat">
+      <span class="stat-num">15K+</span>
+      <span class="stat-label">Training Images</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">B3</span>
+      <span class="stat-label">EfficientNet</span>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT: Upload -->
+  <div class="card" style="position:relative;">
+    <div class="loading-overlay" id="loading">
+      <div class="big-spinner"></div>
+      <div class="loading-text">Analysing your image…</div>
+      <div class="loading-sub">Running EfficientNetB3 + Grad-CAM</div>
+    </div>
+
+    <div class="card-title">Upload <span>Image</span></div>
+
+    <div class="dropzone" id="dropzone">
+      <input type="file" id="file-input" accept="image/*">
+      <span class="dz-icon">📸</span>
+      <div class="dz-title">Drop your cattle photo here</div>
+      <div class="dz-sub">JPG, PNG, WEBP · Max 16 MB</div>
+    </div>
+
+    <div id="preview-container">
+      <img id="preview-img" src="" alt="Preview">
+      <div class="preview-actions">
+        <button class="btn btn-primary" id="analyze-btn" onclick="analyzeImage()">
+          <span id="btn-text">🔍 Identify Breed</span>
+          <div class="spinner" id="btn-spinner"></div>
+        </button>
+        <button class="btn btn-outline" onclick="resetAll()">↩ Reset</button>
+      </div>
+    </div>
+
+    <div class="error-box" id="error-box"></div>
+  </div>
+
+  <!-- RIGHT: Results -->
+  <div class="card">
+    <!-- Empty state -->
+    <div class="empty-state" id="empty-state">
+      <div class="es-icon">🔬</div>
+      <p>Upload a cattle image to see AI predictions and Grad-CAM visualisation</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results">
+      <!-- Top breed -->
+      <div class="top-breed-banner" id="tbr-banner">
+        <div class="tbr-label">Top Prediction</div>
+        <div class="tbr-breed" id="tbr-name">—</div>
+        <div class="tbr-conf">
+          <div class="conf-dot"></div>
+          <span id="tbr-conf-val">—% confidence</span>
+        </div>
+        <div class="breed-meta" id="breed-meta"></div>
+      </div>
+
+      <!-- Top-5 bars -->
+      <div class="section-label">Top 5 Predictions</div>
+      <div id="bars-container"></div>
+
+      <!-- Grad-CAM -->
+      <div class="gradcam-section">
+        <div class="gradcam-label">🔥 Grad-CAM — What the model sees</div>
+        <div class="gradcam-wrap">
+          <div>
+            <img id="orig-img-small" src="" alt="Original">
+            <div class="gradcam-caption">Original</div>
+          </div>
+          <div>
+            <img id="cam-img" src="" alt="Grad-CAM">
+            <div class="gradcam-caption">Attention heatmap</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fact -->
+      <div class="fact-box" id="fact-box">
+        <strong>📚 Did you know?</strong> <span id="fact-text"></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BREEDS GRID -->
+<section class="breeds-section">
+  <div class="breeds-header">
+    <h3>All {{ num_breeds }} Supported Breeds</h3>
+    <p>Our model recognises these Indian cattle breeds</p>
+  </div>
+  <div class="breeds-grid" id="breeds-grid"></div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  Built with <strong>EfficientNetB3</strong> · Transfer Learning · Grad-CAM ·
+  Indian Cattle Image Dataset (Kaggle) ·
+  Capstone Project — Deep Learning in Agriculture
+</footer>
+
+<script>
+const dropzone   = document.getElementById('dropzone');
+const fileInput  = document.getElementById('file-input');
+const previewCon = document.getElementById('preview-container');
+const previewImg = document.getElementById('preview-img');
+const emptyState = document.getElementById('empty-state');
+const results    = document.getElementById('results');
+const errorBox   = document.getElementById('error-box');
+const loading    = document.getElementById('loading');
+
+let currentFile = null;
+let origDataURL = null;
+
+// ── Drag & Drop ──────────────────────────────────────────────
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault(); dropzone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) handleFile(f);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) handleFile(fileInput.files[0]);
+});
+
+function handleFile(file) {
+  currentFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    origDataURL = e.target.result;
+    previewImg.src = e.target.result;
+    previewCon.style.display = 'block';
+    dropzone.style.display = 'none';
+    errorBox.style.display = 'none';
+    results.style.display = 'none';
+    emptyState.style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetAll() {
+  currentFile = null; origDataURL = null;
+  fileInput.value = '';
+  previewCon.style.display = 'none';
+  dropzone.style.display = 'block';
+  results.style.display = 'none';
+  emptyState.style.display = 'flex';
+  errorBox.style.display = 'none';
+}
+
+// ── Analyse ──────────────────────────────────────────────────
+async function analyzeImage() {
+  if (!currentFile) return;
+
+  loading.classList.add('active');
+  errorBox.style.display = 'none';
+
+  const fd = new FormData();
+  fd.append('image', currentFile);
+
+  try {
+    const res  = await fetch('/predict', { method: 'POST', body: fd });
+    const data = await res.json();
+
+    if (!data.success) throw new Error(data.error || 'Prediction failed');
+    renderResults(data);
+  } catch(err) {
+    errorBox.textContent = '❌ ' + err.message;
+    errorBox.style.display = 'block';
+  } finally {
+    loading.classList.remove('active');
+  }
+}
+
+function renderResults(data) {
+  // Top breed
+  document.getElementById('tbr-name').textContent   = data.top_breed.replace(/_/g,' ');
+  document.getElementById('tbr-conf-val').textContent = data.confidence.toFixed(1) + '% confidence';
+
+  // Meta pills
+  const meta = document.getElementById('breed-meta');
+  meta.innerHTML = '';
+  if (data.breed_info) {
+    if (data.breed_info.region) meta.innerHTML += `<span class="meta-pill">📍 ${data.breed_info.region}</span>`;
+    if (data.breed_info.use)    meta.innerHTML += `<span class="meta-pill">🎯 ${data.breed_info.use}</span>`;
+  }
+
+  // Bars
+  const bars = document.getElementById('bars-container');
+  bars.innerHTML = '';
+  data.predictions.forEach((p, i) => {
+    bars.innerHTML += `
+      <div class="bar-row">
+        <div class="bar-name">${p.breed.replace(/_/g,' ')}</div>
+        <div class="bar-track">
+          <div class="bar-fill ${i===0?'top':''}" style="width:0%" data-w="${p.confidence}"></div>
+        </div>
+        <div class="bar-pct">${p.confidence.toFixed(1)}%</div>
+      </div>`;
+  });
+  // Animate bars
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.bar-fill').forEach(el => {
+      el.style.width = el.dataset.w + '%';
+    });
+  });
+
+  // Grad-CAM
+  document.getElementById('orig-img-small').src = origDataURL;
+  document.getElementById('cam-img').src = 'data:image/png;base64,' + data.gradcam;
+
+  // Fact
+  if (data.breed_info && data.breed_info.fact) {
+    document.getElementById('fact-text').textContent = data.breed_info.fact;
+    document.getElementById('fact-box').style.display = 'block';
+  } else {
+    document.getElementById('fact-box').style.display = 'none';
+  }
+
+  emptyState.style.display = 'none';
+  results.style.display    = 'block';
+  results.classList.add('fade-up');
+}
+
+// ── Load breeds grid ─────────────────────────────────────────
+async function loadBreeds() {
+  try {
+    const res  = await fetch('/breeds');
+    const data = await res.json();
+    const grid = document.getElementById('breeds-grid');
+    grid.innerHTML = data.breeds.map(b =>
+      `<div class="breed-chip">${b.replace(/_/g,' ')}</div>`
+    ).join('');
+  } catch(e) {}
+}
+
+loadBreeds();
+</script>
+</body>
+</html>
